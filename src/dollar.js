@@ -109,7 +109,7 @@ class Unistroke {
 //
 // Result class
 //
-class Unistroke {
+class Result {
 	constructor(name, score) {
 		this.Name = name;
 		this.Score = score;
