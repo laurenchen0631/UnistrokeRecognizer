@@ -1,4 +1,4 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 import DollarRecognizer from './dollar.js';
 
@@ -32,6 +32,12 @@ class RecognizerCanvas extends React.Component {
 		};
 	}
 
+	componentWillReceiveProps(nextProps) {
+		if (nextProps.samples !== this.props.samples) {
+			Recognizer.ChangeSampleRate(nextProps.samples);
+		}
+	}
+
 	handleMouseDown(e) {
 		const canvas = ReactDOM.findDOMNode(this);
 		const rect = canvas.getBoundingClientRect();
@@ -44,7 +50,13 @@ class RecognizerCanvas extends React.Component {
 
 	handleMouseUp() {
 		if (this.state.points.length > 0) {
-			this.props.onRecognize(Recognizer.Recognize(this.state.points, this.props.useProtractor));
+			this.props.onRecognize(
+				Recognizer.Recognize(
+					this.state.points,
+					this.props.samples ,
+					this.props.useProtractor
+				)
+			);
 		}
 		this.setState({
 			isMoving: false,
@@ -105,6 +117,7 @@ class UnistrokeRecognizer extends React.Component {
 		super(props);
 		this.state = {
 			result: null,
+			samples: 64,
 			useProtractor: false,
 		};
 	}
@@ -112,6 +125,12 @@ class UnistrokeRecognizer extends React.Component {
 	onChangeAlgorithm(e) {
 		this.setState({
 			useProtractor: e.target.checked,
+		});
+	}
+
+	onChangeSamples(e) {
+		this.setState({
+			samples: Number(e.target.value)
 		});
 	}
 
@@ -136,9 +155,24 @@ class UnistrokeRecognizer extends React.Component {
 				/> Use Protractor
 				<br/>
 
+				<span>The number of samples </span>
+				<select
+					defaultValue={this.state.samples}
+					onChange={this.onChangeSamples.bind(this)}
+				>
+					<option value="2">2</option>
+					<option value="3">3</option>
+					<option value="4">4</option>
+					<option value="8">8</option>
+					<option value="16">16</option>
+					<option value="32">32</option>
+					<option value="64">64</option>
+				</select>
+
 				<RecognizerCanvas
 					useProtractor={this.state.useProtractor}
 					onRecognize={this.handleResult.bind(this)}
+					samples={this.state.samples}
 				/>
 				{result}
 			</div>
