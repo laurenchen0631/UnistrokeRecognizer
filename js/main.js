@@ -19071,21 +19071,24 @@ var RecognizerCanvas = (function (_React$Component) {
 			var rect = canvas.getBoundingClientRect();
 			this.setState({
 				isMoving: true,
-				prePoint: new Point(e.clientX - rect.left, e.clientY - rect.top)
+				prePoint: new Point(e.clientX - rect.left, e.clientY - rect.top),
+				points: [new Point(e.clientX - rect.left, e.clientY - rect.top)]
 			});
 		}
 	}, {
 		key: 'handleMouseUp',
 		value: function handleMouseUp(e) {
+			var result = Recognizer.Recognize(this.state.points, false);
+			console.log(result);
+			// console.log();
 			this.setState({
-				isMoving: false
+				isMoving: false,
+				points: []
 			});
 
 			//clean canvas
 			var canvas = _reactDom2.default.findDOMNode(this);
 			var ctx = canvas.getContext('2d');
-
-			//clean canvas before draw
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 		}
 	}, {
@@ -19101,9 +19104,11 @@ var RecognizerCanvas = (function (_React$Component) {
 				ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
 				ctx.stroke();
 				ctx.closePath();
-				// ctx.fillRect(e.clientX - rect.left, e.clientY - rect.top, 3, 3);
+				ctx.fillRect(e.clientX - rect.left - 2, e.clientY - rect.top - 2, 4, 4);
+
 				this.setState({
-					prePoint: new Point(e.clientX - rect.left, e.clientY - rect.top)
+					prePoint: new Point(e.clientX - rect.left, e.clientY - rect.top),
+					points: this.state.points.concat(new Point(e.clientX - rect.left, e.clientY - rect.top))
 				});
 			}
 		}
@@ -19322,13 +19327,13 @@ var DollarRecognizer = (function () {
 			var b = +Infinity;
 			var u = -1;
 
-			this.Unistrokes.forEach(function (unistroke, index) {
+			this.Unistrokes.forEach(function (unistroke, i) {
 				var d = useProtractor ? OptimalCosineDistance(this.Unistrokes[i].Vector, vector) : DistanceAtBestAngle(points, this.Unistrokes[i], -AngleRange, +AngleRange, AnglePrecision);
 				if (d < b) {
 					b = d;
-					u = index;
+					u = i;
 				}
-			});
+			}, this);
 
 			return u === -1 ? new Result("No match.", 0.0) : new Result(this.Unistrokes[u].Name, useProtractor ? 1.0 / b : 1.0 - b / HalfDiagonal);
 		}
@@ -19362,14 +19367,14 @@ function Resample(points, n) {
 	var I = PathLength(points) / (n - 1); // interval length
 	var D = 0;
 	var newpoints = [points[0]];
-	for (var _i = 1; _i < points.length; _i++) {
-		var d = Distance(points[_i - 1], points[_i]);
+	for (var i = 1; i < points.length; i++) {
+		var d = Distance(points[i - 1], points[i]);
 		if (D + d >= I) {
-			var qx = points[_i - 1].X + (I - D) / d * (points[_i].X - points[_i - 1].X);
-			var qy = points[_i - 1].Y + (I - D) / d * (points[_i].Y - points[_i - 1].Y);
+			var qx = points[i - 1].X + (I - D) / d * (points[i].X - points[i - 1].X);
+			var qy = points[i - 1].Y + (I - D) / d * (points[i].Y - points[i - 1].Y);
 			var q = new Point(qx, qy);
 			newpoints.push(q);
-			points.splice(_i, 0, q); // insert 'q' at position i in points s.t. 'q' will be the next i
+			points.splice(i, 0, q); // insert 'q' at position i in points s.t. 'q' will be the next i
 			D = 0;
 		} else {
 			D += d;

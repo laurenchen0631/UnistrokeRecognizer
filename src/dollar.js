@@ -418,15 +418,15 @@ export default class DollarRecognizer {
 		let b = +Infinity;
 		let u = -1;
 
-		this.Unistrokes.forEach(function(unistroke, index) {
+		this.Unistrokes.forEach(function(unistroke, i) {
 			const d = useProtractor
 				? OptimalCosineDistance(this.Unistrokes[i].Vector, vector)
 				: DistanceAtBestAngle(points, this.Unistrokes[i], -AngleRange, +AngleRange, AnglePrecision);
 			if (d < b) {
 				b = d;
-				u = index;
+				u = i;
 			}
-		});
+		}, this);
 
 		return u === -1
 			? new Result("No match.", 0.0)

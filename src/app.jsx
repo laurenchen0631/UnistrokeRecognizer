@@ -36,20 +36,23 @@ class RecognizerCanvas extends React.Component {
 		const rect = canvas.getBoundingClientRect();
 		this.setState({
 			isMoving: true,
-			prePoint: new Point(e.clientX - rect.left, e.clientY - rect.top)
+			prePoint: new Point(e.clientX - rect.left, e.clientY - rect.top),
+			points: [new Point(e.clientX - rect.left, e.clientY - rect.top)],
 		});
 	}
 
 	handleMouseUp(e) {
+		const result = Recognizer.Recognize(this.state.points, false);
+		console.log(result);
+		// console.log();
 		this.setState({
 			isMoving: false,
+			points: [],
 		});
 
 		//clean canvas
 		const canvas = ReactDOM.findDOMNode(this);
 		const ctx = canvas.getContext('2d');
-
-		//clean canvas before draw
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 	}
 
@@ -64,9 +67,13 @@ class RecognizerCanvas extends React.Component {
 				ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
 				ctx.stroke();
 			ctx.closePath();
-			// ctx.fillRect(e.clientX - rect.left, e.clientY - rect.top, 3, 3);
+			ctx.fillRect(e.clientX - rect.left - 2, e.clientY - rect.top - 2 , 4, 4);
+
 			this.setState({
-				prePoint: new Point(e.clientX - rect.left, e.clientY - rect.top)
+				prePoint: new Point(e.clientX - rect.left, e.clientY - rect.top),
+				points: this.state.points.concat(
+					new Point(e.clientX - rect.left, e.clientY - rect.top)
+				),
 			});
 		}
 	}
