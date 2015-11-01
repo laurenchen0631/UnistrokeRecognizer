@@ -8,6 +8,7 @@ const styles = {
 		width: 600,
 		height: 600,
 		backgroundColor: '#f9f9f9',
+		display: 'block'
 		// borderStyle: 'double',
 	},
 };
@@ -41,10 +42,10 @@ class RecognizerCanvas extends React.Component {
 		});
 	}
 
-	handleMouseUp(e) {
-		const result = Recognizer.Recognize(this.state.points, false);
-		console.log(result);
-		// console.log();
+	handleMouseUp() {
+		if (this.state.points.length > 0) {
+			this.props.onRecognize(Recognizer.Recognize(this.state.points, this.props.useProtractor));
+		}
 		this.setState({
 			isMoving: false,
 			points: [],
@@ -79,7 +80,9 @@ class RecognizerCanvas extends React.Component {
 	}
 
 	handleMouseOut() {
-
+		if (this.state.isMoving) {
+			this.handleMouseUp();
+		}
 	}
 
 	render() {
@@ -91,6 +94,7 @@ class RecognizerCanvas extends React.Component {
 				onMouseDown={this.handleMouseDown.bind(this)}
 				onMouseMove={this.handleMouseMove.bind(this)}
 				onMouseUp={this.handleMouseUp.bind(this)}
+				onMouseLeave={this.handleMouseOut.bind(this)}
 			/>
 		);
 	}
@@ -99,12 +103,44 @@ class RecognizerCanvas extends React.Component {
 class UnistrokeRecognizer extends React.Component {
 	constructor(props) {
 		super(props);
+		this.state = {
+			result: null,
+			useProtractor: false,
+		};
+	}
+
+	onChangeAlgorithm(e) {
+		this.setState({
+			useProtractor: e.target.checked,
+		});
+	}
+
+	handleResult(result) {
+		this.setState({
+			result
+		});
 	}
 
 	render() {
+
+		const result =
+			this.state.result &&
+			<div>RESULT: {this.state.result.Name} ({this.state.result.Score})</div>;
+
 		return (
 			<div>
-				<RecognizerCanvas />
+				<input
+					onChange={this.onChangeAlgorithm.bind(this)}
+					type="checkbox"
+					ref="checkbox"
+				/> Use Protractor
+				<br/>
+
+				<RecognizerCanvas
+					useProtractor={this.state.useProtractor}
+					onRecognize={this.handleResult.bind(this)}
+				/>
+				{result}
 			</div>
 		);
 	}
