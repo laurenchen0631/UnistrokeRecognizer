@@ -1,6 +1,9 @@
 {
   "name": "Unistroke_Recognizer",
   "version": "0.0.0",
+  "engines": {
+    "node": ">=4.0.0"
+  },
   "dependencies": {
     "react": "^0.14.1",
     "react-dom": "^0.14.1",

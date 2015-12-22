@@ -2,14 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import DollarRecognizer from './dollar.js';
 
-
 const styles = {
 	canvas: {
-		width: 600,
-		height: 600,
+		width: 300,
+		height: 300,
 		backgroundColor: '#f9f9f9',
-		display: 'block'
-		// borderStyle: 'double',
+		display: 'block',
+    	userSelect: 'none',
 	},
 };
 
@@ -41,14 +40,17 @@ class RecognizerCanvas extends React.Component {
 	handleMouseDown(e) {
 		const canvas = ReactDOM.findDOMNode(this);
 		const rect = canvas.getBoundingClientRect();
+		const x = e.clientX || e.targetTouches[0].clientX;
+		const y = e.clientY || e.targetTouches[0].clientY;
 		this.setState({
 			isMoving: true,
-			prePoint: new Point(e.clientX - rect.left, e.clientY - rect.top),
-			points: [new Point(e.clientX - rect.left, e.clientY - rect.top)],
+			prePoint: new Point(x - rect.left, y - rect.top),
+			points: [new Point(x - rect.left, y - rect.top)],
 		});
 	}
 
 	handleMouseUp() {
+		console.log('handleMouseUp');
 		if (this.state.points.length > 0) {
 			this.props.onRecognize(
 				Recognizer.Recognize(
@@ -70,24 +72,31 @@ class RecognizerCanvas extends React.Component {
 	}
 
 	handleMouseMove(e) {
+		e.preventDefault();
+		e.stopPropagation();
 		if (this.state.isMoving) {
+			// console.log(e.clientX);
+			// console.log();
+			const x = e.clientX || e.targetTouches[0].clientX;
+			const y = e.clientY || e.targetTouches[0].clientY;
+
 			const canvas = ReactDOM.findDOMNode(this);
 			const ctx = canvas.getContext('2d');
 			const rect = canvas.getBoundingClientRect();
 
 			ctx.beginPath();
 				ctx.moveTo(this.state.prePoint.X, this.state.prePoint.Y);
-				ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+				ctx.lineTo(x - rect.left, y - rect.top);
 				ctx.stroke();
 			ctx.closePath();
-			ctx.fillRect(e.clientX - rect.left - 2, e.clientY - rect.top - 2 , 4, 4);
+			ctx.fillRect(x - rect.left - 2, y - rect.top - 2 , 4, 4);
 
 			this.setState({
-				prePoint: new Point(e.clientX - rect.left, e.clientY - rect.top),
+				prePoint: new Point(x - rect.left, y - rect.top),
 				points: this.state.points.concat(
-					new Point(e.clientX - rect.left, e.clientY - rect.top)
+					new Point(x - rect.left, y - rect.top)
 				),
-			});
+			}, () => console.log(this.state.points));
 		}
 	}
 
@@ -100,13 +109,19 @@ class RecognizerCanvas extends React.Component {
 	render() {
 		return (
 			<canvas
-				width={600}
-				height={600}
+				width={300}
+				height={300}
 				style={styles.canvas}
 				onMouseDown={this.handleMouseDown.bind(this)}
 				onMouseMove={this.handleMouseMove.bind(this)}
 				onMouseUp={this.handleMouseUp.bind(this)}
 				onMouseLeave={this.handleMouseOut.bind(this)}
+
+				onTouchStart={this.handleMouseDown.bind(this)}
+				onTouchMove={this.handleMouseMove.bind(this)}
+				onTouchEnd={this.handleMouseOut.bind(this)}
+				onTouchCancel={this.handleMouseUp.bind(this)}
+
 			/>
 		);
 	}
